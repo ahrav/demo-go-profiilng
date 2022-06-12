@@ -52,7 +52,7 @@ func addTagsToName(name string, tags map[string]string) string {
 	// We tried to pool the object, but perf didn't get better.
 	// It's most likely due to use of defer, which itself has non-trivial overhead.
 	buf := bufPool.Get().(*bytes.Buffer)
-	defer bufPool.Put(buf)
+	//defer bufPool.Put(buf)
 	buf.Reset()
 	//buf := &bytes.Buffer{}
 	buf.WriteString(name)
@@ -69,7 +69,9 @@ func addTagsToName(name string, tags map[string]string) string {
 		writeClean(buf, v)
 	}
 
-	return buf.String()
+	final := buf.String()
+	bufPool.Put(buf)
+	return final
 }
 
 // writeClean cleans value (e.g. replaces special characters with '-') and
