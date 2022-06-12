@@ -11,7 +11,7 @@ import (
 	"github.com/varstr/uaparser"
 )
 
-const serviceName = "demo-app"
+var _hostName = getHost()
 
 // WithStats wraps handlers with stats reporting. It tracks metrics such
 // as the number of requests per endpoint, the latency, etc.
@@ -28,6 +28,18 @@ func WithStats(h http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func getHost() string {
+	host, err := os.Hostname()
+	if err != nil {
+		return ""
+	}
+
+	if idx := strings.IndexByte(host, '.'); idx > 0 {
+		host = host[:idx]
+	}
+	return host
+}
+
 func getStatsTags(r *http.Request) map[string]string {
 	userBrowser, userOS := parseUserAgent(r.UserAgent())
 	stats := map[string]string{
@@ -35,12 +47,8 @@ func getStatsTags(r *http.Request) map[string]string {
 		"os":       userOS,
 		"endpoint": filepath.Base(r.URL.Path),
 	}
-	host, err := os.Hostname()
-	if err == nil {
-		if idx := strings.IndexByte(host, '.'); idx > 0 {
-			host = host[:idx]
-		}
-		stats["host"] = host
+	if _hostName != "" {
+		stats["host"] = _hostName
 	}
 	return stats
 }
